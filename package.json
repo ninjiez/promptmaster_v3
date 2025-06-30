@@ -11,7 +11,10 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force",
+    "stripe:setup": "tsx scripts/setup-stripe-products.ts",
+    "stripe:listen": "stripe listen --forward-to https://mallard-meet-gladly.ngrok-free.app/api/stripe/webhook",
+    "ngrok": "ngrok http localhost:3000 --url mallard-meet-gladly.ngrok-free.app"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -53,6 +56,7 @@
     "clsx": "^2.1.1",
     "cmdk": "latest",
     "date-fns": "4.1.0",
+    "dotenv": "^17.0.0",
     "embla-carousel-react": "latest",
     "framer-motion": "latest",
     "input-otp": "latest",
@@ -69,6 +73,7 @@
     "react-resizable-panels": "latest",
     "recharts": "latest",
     "sonner": "latest",
+    "stripe": "^18.2.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "latest",

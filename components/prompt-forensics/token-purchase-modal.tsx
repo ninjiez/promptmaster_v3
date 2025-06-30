@@ -1,61 +1,100 @@
 "use client"
 
 import { useState } from "react"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { X, Zap, Star, Crown } from "lucide-react"
+import { X, Zap, Star, Crown, Loader2 } from "lucide-react"
+import { TOKEN_TIERS, TokenTier } from "@/lib/stripe-config"
 
 interface TokenPurchaseModalProps {
   isOpen: boolean
   onClose: () => void
-  onPurchase: (tokens: number, price: number) => void
+  onPurchase?: (tokens: number, price: number) => void
 }
 
 const tokenPackages = [
   {
-    tokens: 1500,
-    price: 3.49,
+    tier: 'SKEPTIC' as TokenTier,
+    tokens: TOKEN_TIERS.SKEPTIC.tokens,
+    price: TOKEN_TIERS.SKEPTIC.price / 100,
     icon: Zap,
-    title: "Skeptic",
+    title: TOKEN_TIERS.SKEPTIC.name,
     color: "gray",
     popular: false,
     discount: null,
   },
   {
-    tokens: 5000,
-    price: 9.99,
+    tier: 'PROMPT_KIDDO' as TokenTier,
+    tokens: TOKEN_TIERS.PROMPT_KIDDO.tokens,
+    price: TOKEN_TIERS.PROMPT_KIDDO.price / 100,
     icon: Zap,
-    title: "Prompt Kiddo",
+    title: TOKEN_TIERS.PROMPT_KIDDO.name,
     color: "blue",
     popular: false,
     discount: null,
   },
   {
-    tokens: 10000,
-    price: 17.99,
+    tier: 'PROMPT_ENGINEER' as TokenTier,
+    tokens: TOKEN_TIERS.PROMPT_ENGINEER.tokens,
+    price: TOKEN_TIERS.PROMPT_ENGINEER.price / 100,
     icon: Star,
-    title: "Prompt Engineer",
+    title: TOKEN_TIERS.PROMPT_ENGINEER.name,
     color: "green",
     popular: true,
-    discount: 10,
+    discount: null,
   },
   {
-    tokens: 20000,
-    price: 29.99,
+    tier: 'PROMPT_GOD' as TokenTier,
+    tokens: TOKEN_TIERS.PROMPT_GOD.tokens,
+    price: TOKEN_TIERS.PROMPT_GOD.price / 100,
     icon: Crown,
-    title: "Prompt GOD",
+    title: TOKEN_TIERS.PROMPT_GOD.name,
     color: "purple",
     popular: false,
-    discount: 25,
+    discount: null,
   },
 ]
 
 export default function TokenPurchaseModal({ isOpen, onClose, onPurchase }: TokenPurchaseModalProps) {
   const [selectedPackage, setSelectedPackage] = useState<number | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const { data: session } = useSession()
 
-  const handlePurchase = (tokens: number, price: number) => {
-    onPurchase(tokens, price)
-    onClose()
+  const handlePurchase = async (tier: TokenTier, tokens: number, price: number) => {
+    if (!session) {
+      alert('Please log in to purchase tokens')
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const response = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ tier }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to create checkout session`)
+      }
+
+      const { url } = await response.json()
+      
+      // Redirect to Stripe Checkout
+      window.location.href = url
+      
+    } catch (error) {
+      console.error('Error creating checkout session:', error)
+      alert(`Failed to initiate payment: ${error instanceof Error ? error.message : 'Please try again.'}`)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (!isOpen) return null
@@ -163,7 +202,8 @@ export default function TokenPurchaseModal({ isOpen, onClose, onPurchase }: Toke
                     </div>
 
                     <Button
-                      onClick={() => handlePurchase(pkg.tokens, pkg.price)}
+                      onClick={() => handlePurchase(pkg.tier, pkg.tokens, pkg.price)}
+                      disabled={isLoading}
                       className={`w-full mt-8 py-4 text-base font-semibold rounded-xl ${
                         pkg.color === "blue"
                           ? "bg-gradient-to-br from-blue-500/80 via-blue-400/70 to-cyan-500/60 backdrop-blur-xl"
@@ -172,9 +212,16 @@ export default function TokenPurchaseModal({ isOpen, onClose, onPurchase }: Toke
                             : pkg.color === "purple"
                               ? "bg-gradient-to-br from-purple-500/80 via-purple-400/70 to-violet-500/60 backdrop-blur-xl"
                               : "bg-gradient-to-br from-gray-500/80 via-gray-400/70 to-slate-500/60 backdrop-blur-xl"
-                      } text-white transition-all duration-200`}
+                      } text-white transition-all duration-200 disabled:opacity-50`}
                     >
-                      Purchase Now
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        'Purchase Now'
+                      )}
                     </Button>
                   </CardContent>
                 </Card>

@@ -8,10 +8,11 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // Allow access to public routes
+        // Allow access to public routes and all API routes
         const publicPaths = ['/', '/auth/error']
         const isPublicPath = publicPaths.some(path => 
-          req.nextUrl.pathname === path || req.nextUrl.pathname.startsWith('/api/auth')
+          req.nextUrl.pathname === path || 
+          req.nextUrl.pathname.startsWith('/api/')
         )
         
         if (isPublicPath) {

@@ -36,10 +36,6 @@ export default function TopNav({
   const [showTokenModal, setShowTokenModal] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
-  const handleTokenPurchase = (tokens: number, price: number) => {
-    console.log(`Purchasing ${tokens} tokens for $${price}`)
-    // TODO: Integrate with payment processor
-  }
 
   const handleLogout = async () => {
     await signOut()
@@ -159,7 +155,6 @@ export default function TopNav({
       <TokenPurchaseModal
         isOpen={showTokenModal}
         onClose={() => setShowTokenModal(false)}
-        onPurchase={handleTokenPurchase}
       />
     </>
   )
