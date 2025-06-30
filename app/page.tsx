@@ -8,6 +8,7 @@ import WorkingView from "@/components/prompt-forensics/working-view"
 import TopNav from "@/components/prompt-forensics/top-nav"
 import FeedbackView from "@/components/prompt-forensics/feedback-view"
 import LoginModal from "@/components/prompt-forensics/login-modal"
+import TokenPurchaseModal from "@/components/prompt-forensics/token-purchase-modal"
 import IdeaInputView from "@/components/prompt-forensics/idea-input-view"
 
 export default function PromptForensicsPage() {
@@ -17,8 +18,10 @@ export default function PromptForensicsPage() {
   )
   const [promptType, setPromptType] = useState<"system-user" | "direct">("system-user")
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [showTokenModal, setShowTokenModal] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isFromPromptInput, setIsFromPromptInput] = useState(false)
+  const [generatedPromptData, setGeneratedPromptData] = useState<any>(null)
 
   const handleIdeaStart = () => {
     setIsFromPromptInput(false)
@@ -38,6 +41,14 @@ export default function PromptForensicsPage() {
 
   const handleCloseLoginModal = () => {
     setShowLoginModal(false)
+  }
+
+  const handleShowTokenModal = () => {
+    setShowTokenModal(true)
+  }
+
+  const handleCloseTokenModal = () => {
+    setShowTokenModal(false)
   }
 
   const handleLogin = () => {
@@ -97,7 +108,10 @@ export default function PromptForensicsPage() {
     setIsGenerating(false)
   }
 
-  const handleGenerateV1 = () => {
+  const handleGenerateV1 = (promptData?: any) => {
+    if (promptData) {
+      setGeneratedPromptData(promptData)
+    }
     setView("prompt-type-selection")
   }
 
@@ -119,6 +133,7 @@ export default function PromptForensicsPage() {
           <IdeaInputView
             onGenerateV1={handleGenerateV1}
             onShowLoginModal={handleShowLoginModal}
+            onShowTokenModal={handleShowTokenModal}
             onStartGenerating={handleStartGenerating}
             onStopGenerating={handleStopGenerating}
           />
@@ -131,12 +146,14 @@ export default function PromptForensicsPage() {
             promptType={promptType}
             onShowLoginModal={handleShowLoginModal}
             isFromPromptInput={isFromPromptInput}
+            generatedPromptData={generatedPromptData}
           />
         )}
         {view === "feedback" && <FeedbackView />}
       </main>
 
       <LoginModal isOpen={showLoginModal} onClose={handleCloseLoginModal} onLogin={handleLogin} />
+      <TokenPurchaseModal isOpen={showTokenModal} onClose={handleCloseTokenModal} />
     </div>
   )
 }

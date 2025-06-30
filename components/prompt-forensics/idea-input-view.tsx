@@ -7,8 +7,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Sparkles, Lightbulb } from "lucide-react"
 
 interface IdeaInputViewProps {
-  onGenerateV1: () => void
+  onGenerateV1: (generatedPromptData?: any) => void
   onShowLoginModal?: () => void
+  onShowTokenModal?: () => void
   onStartGenerating?: () => void
   onStopGenerating?: () => void
 }
@@ -16,6 +17,7 @@ interface IdeaInputViewProps {
 export default function IdeaInputView({
   onGenerateV1,
   onShowLoginModal,
+  onShowTokenModal,
   onStartGenerating,
   onStopGenerating,
 }: IdeaInputViewProps) {
@@ -30,11 +32,54 @@ export default function IdeaInputView({
     setIsGenerating(true)
     if (onStartGenerating) onStartGenerating()
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsGenerating(false)
-    if (onStopGenerating) onStopGenerating()
-    onGenerateV1()
+    try {
+      const response = await fetch('/api/prompts/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idea: idea.trim(),
+          context: selectedCategory || '',
+          useCase: selectedSubcategory || '',
+          style: 'professional',
+          targetAudience: 'professionals'
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (!response.ok) {
+        // Handle specific error cases
+        if (response.status === 401) {
+          // User not authenticated
+          if (onShowLoginModal) onShowLoginModal()
+          return
+        } else if (response.status === 402) {
+          // Insufficient tokens
+          console.error('Insufficient tokens:', result.error)
+          if (onShowTokenModal) onShowTokenModal()
+          return
+        } else {
+          // Other errors
+          console.error('Generation failed:', result.error)
+          alert(`Generation failed: ${result.error}`)
+          return
+        }
+      }
+
+      if (result.success) {
+        // Pass generated prompt data to next view
+        onGenerateV1(result.data)
+      } else {
+        console.error('Generation failed:', result.error)
+        alert(`Generation failed: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Prompt generation failed:', error)
+      alert('Prompt generation failed. Please try again.')
+    } finally {
+      setIsGenerating(false)
+      if (onStopGenerating) onStopGenerating()
+    }
   }
 
   const handleCategoryClick = (category: string) => {
