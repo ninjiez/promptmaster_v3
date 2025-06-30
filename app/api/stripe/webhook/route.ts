@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
-import { prisma } from '@/lib/database'
+import { prisma } from '@/lib/database/client'
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
@@ -25,19 +25,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle the event
+    console.log(`🎯 Processing webhook event: ${event.type}`)
+    
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
         
-        console.log('Processing successful checkout:', session.id)
+        console.log('💳 Processing successful checkout:', session.id)
+        console.log('📊 Session metadata:', session.metadata)
 
         // Extract metadata
         const userId = session.metadata?.userId
         const tokens = parseInt(session.metadata?.tokens || '0')
         const tier = session.metadata?.tier
 
+        console.log('🔍 Extracted values:', { userId, tokens, tier })
+
         if (!userId || !tokens) {
-          console.error('Missing required metadata:', { userId, tokens, tier })
+          console.error('❌ Missing required metadata:', { userId, tokens, tier })
           return NextResponse.json(
             { error: 'Missing required metadata' },
             { status: 400 }
@@ -45,15 +50,27 @@ export async function POST(request: NextRequest) {
         }
 
         try {
+          console.log(`💰 Attempting to credit ${tokens} tokens to user ${userId}`)
           // Update user's token balance and create transaction record
           await prisma.$transaction(async (tx) => {
+            // Get current user balance first
+            const currentUser = await tx.user.findUnique({
+              where: { id: userId },
+              select: { tokenBalance: true }
+            })
+
+            if (!currentUser) {
+              throw new Error(`User ${userId} not found`)
+            }
+
+            const balanceBefore = currentUser.tokenBalance || 0
+            const balanceAfter = balanceBefore + tokens
+
             // Update user's token balance
             const user = await tx.user.update({
               where: { id: userId },
               data: {
-                tokenBalance: {
-                  increment: tokens
-                }
+                tokenBalance: balanceAfter
               }
             })
 
@@ -64,8 +81,9 @@ export async function POST(request: NextRequest) {
                 amount: tokens,
                 type: 'PURCHASE',
                 description: `Stripe payment - ${tier} tier (${tokens.toLocaleString()} tokens)`,
-                stripeSessionId: session.id,
-                stripePaymentIntentId: session.payment_intent as string || null,
+                reference: session.id, // Use reference field for stripe session ID
+                balanceBefore,
+                balanceAfter,
               }
             })
 
