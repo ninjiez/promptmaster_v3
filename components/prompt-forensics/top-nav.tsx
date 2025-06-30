@@ -3,7 +3,16 @@
 import { useState } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, BotMessageSquare, User } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { ArrowLeft, BotMessageSquare, User, LogOut, Coins, ChevronDown } from "lucide-react"
 import TokenPurchaseModal from "./token-purchase-modal"
 
 interface TopNavProps {
@@ -25,18 +34,25 @@ export default function TopNav({
 }: TopNavProps) {
   const { data: session, status } = useSession()
   const [showTokenModal, setShowTokenModal] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   const handleTokenPurchase = (tokens: number, price: number) => {
     console.log(`Purchasing ${tokens} tokens for $${price}`)
     // TODO: Integrate with payment processor
   }
 
-  const handleAuthAction = async () => {
-    if (session) {
-      await signOut()
-    } else {
-      onShowLogin?.()
-    }
+  const handleLogout = async () => {
+    await signOut()
+  }
+
+  const getUserInitials = (name?: string | null) => {
+    if (!name) return "U"
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
+  }
+
+  const getFirstName = (name?: string | null) => {
+    if (!name) return "User"
+    return name.split(" ")[0]
   }
 
   return (
@@ -61,28 +77,82 @@ export default function TopNav({
           )}
         </div>
         <div className="flex items-center gap-4">
-          {session && (
-            <div className="bg-gradient-to-br from-white/15 via-white/8 to-white/15 backdrop-blur-xl border border-white/20 shadow-lg text-sm rounded-full px-4 py-1.5">
-              Tokens: <span className="font-semibold">{session.user.tokenBalance?.toLocaleString() || '0'}</span>
-            </div>
-          )}
+          {session ? (
+            /* User Profile Dropdown */
+            <DropdownMenu onOpenChange={setIsDropdownOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="bg-gradient-to-br from-white/15 via-white/8 to-white/15 backdrop-blur-xl border border-white/20 hover:from-white/20 hover:via-white/12 hover:to-white/20 shadow-lg hover:shadow-xl rounded-full px-3 py-2 flex items-center gap-3 transition-all duration-200"
+                >
+                  <Avatar className="h-8 w-8 border border-white/20">
+                    <AvatarImage src={session.user.image || undefined} alt={session.user.name || "User"} />
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-sm font-semibold">
+                      {getUserInitials(session.user.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden sm:block text-white text-sm font-medium max-w-24 truncate">
+                    {getFirstName(session.user.name)}
+                  </span>
+                  <ChevronDown 
+                    className={`h-4 w-4 text-white/70 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} 
+                  />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                align="end" 
+                className="w-64 bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/95 backdrop-blur-2xl border border-white/20 shadow-2xl"
+              >
+                {/* User Info Header with Token Balance */}
+                <DropdownMenuLabel className="text-white">
+                  <div className="flex justify-between items-start">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">{session.user.name || "User"}</p>
+                      <p className="text-xs text-white/60">{session.user.email}</p>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-white/70">
+                      <Coins className="h-3 w-3" />
+                      <span className="font-medium">
+                        {session.user.tokenBalance?.toLocaleString() || '0'}
+                      </span>
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
 
-          {session && (
+                <DropdownMenuSeparator className="bg-white/10" />
+
+                {/* Actions */}
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setShowTokenModal(true)
+                    setIsDropdownOpen(false)
+                  }}
+                  className="text-white hover:bg-white/10 cursor-pointer"
+                >
+                  <Coins className="mr-2 h-4 w-4 text-blue-400" />
+                  <span>Buy Tokens</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator className="bg-white/10" />
+
+                <DropdownMenuItem 
+                  onClick={handleLogout}
+                  className="text-white hover:bg-white/10 cursor-pointer focus:bg-red-500/10 focus:text-red-300"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
             <Button
-              onClick={() => setShowTokenModal(true)}
-              className="bg-gradient-to-br from-blue-500/80 via-blue-400/70 to-purple-500/60 backdrop-blur-xl border border-blue-400/40 hover:from-blue-500/90 hover:via-blue-400/80 hover:to-purple-500/70 hover:border-blue-400/50 shadow-xl hover:shadow-blue-500/30 text-white rounded-full text-sm font-medium"
+              onClick={onShowLogin}
+              className="bg-gradient-to-br from-white/15 via-white/8 to-white/15 backdrop-blur-xl border border-white/20 hover:from-white/20 hover:via-white/12 hover:to-white/20 shadow-lg hover:shadow-xl text-white rounded-full px-4 py-2 flex items-center gap-2"
             >
-              Buy Tokens
+              <User className="h-4 w-4" />
+              Login
             </Button>
           )}
-
-          <Button
-            onClick={handleAuthAction}
-            className="bg-gradient-to-br from-white/15 via-white/8 to-white/15 backdrop-blur-xl border border-white/20 hover:from-white/20 hover:via-white/12 hover:to-white/20 shadow-lg hover:shadow-xl text-white rounded-full px-4 py-2 flex items-center gap-2"
-          >
-            <User className="h-4 w-4" />
-            {session ? "Logout" : "Login"}
-          </Button>
         </div>
       </header>
 
