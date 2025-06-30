@@ -1,27 +1,64 @@
-import type { PromptTemplate } from './types'
+// Prompt templates for AI-powered operations
+export interface PromptTemplate {
+  id: string
+  name: string
+  description: string
+  template: string
+  requiredVariables: string[]
+  optionalVariables: string[]
+  category: 'generation' | 'analysis' | 'improvement' | 'utility'
+}
 
-// Placeholder prompts - these will be replaced with the advanced prompts from PRD later
 export const PROMPT_TEMPLATES: Record<string, PromptTemplate> = {
-  IDEA_TO_PROMPT: {
-    id: 'idea_to_prompt',
-    name: 'Idea to Prompt Generator',
-    description: 'Converts abstract ideas into structured prompts',
-    template: `You are a prompt engineering expert. Convert the following idea into a well-structured prompt.
+  PROMPT_GENERATION: {
+    id: 'prompt_generation',
+    name: 'AI Prompt Generator',
+    description: 'Transforms user ideas into high-quality, effective prompts',
+    template: `You are PromptGOD, an expert AI prompt engineer. Your task is to transform a user's idea into a high-quality, effective prompt for AI models.
 
-Idea: {USER_DESCRIPTION}
-Use Case: {USE_CASE}
-Target Model: {MODEL}
-Constraints: {CONSTRAINTS}
+## User Input:
+**Idea:** {idea}
+**Context:** {context}
+**Use Case:** {useCase}
+**Style:** {style}
+**Target Audience:** {targetAudience}
 
-Create a clear, actionable prompt that achieves the user's goal. Structure your response with:
-1. A clear role definition
-2. Specific task instructions  
-3. Output format requirements
-4. Any necessary constraints
+## Your Task:
+Generate a comprehensive prompt that:
+1. Is clear and specific
+2. Provides necessary context
+3. Includes examples when helpful
+4. Specifies the desired output format
+5. Considers the target audience and use case
 
-Generate only the final prompt, ready for use.`,
-    requiredVariables: ['USER_DESCRIPTION'],
-    optionalVariables: ['USE_CASE', 'MODEL', 'CONSTRAINTS'],
+## Output Format:
+You MUST respond with a valid JSON object. The response should be ONLY the JSON object, without any markdown formatting, code blocks, or additional text.
+
+**CRITICAL: Ensure proper JSON formatting:**
+- Use double quotes for all strings
+- No trailing commas
+- No line breaks within string values (use \n for line breaks if needed)
+- Escape special characters properly
+
+**Expected JSON Structure:**
+{
+  "title": "A descriptive title for the prompt (max 60 characters)",
+  "description": "A brief description of what this prompt does (max 200 characters)",
+  "content": "The actual prompt content (well-structured and detailed)",
+  "tags": ["tag1", "tag2", "tag3"],
+  "suggestions": ["improvement suggestion 1", "improvement suggestion 2"]
+}
+
+## Guidelines:
+- Make the prompt actionable and specific
+- Include relevant constraints and requirements
+- Consider edge cases and potential ambiguities
+- Use clear, professional language
+- Optimize for the specified style and audience
+
+Generate the JSON response now:`,
+    requiredVariables: ['idea', 'context', 'useCase', 'style', 'targetAudience'],
+    optionalVariables: [],
     category: 'generation',
   },
 
@@ -31,9 +68,9 @@ Generate only the final prompt, ready for use.`,
     description: 'Generates questions to improve prompt quality',
     template: `You are a prompt optimization specialist. Analyze the provided prompt and generate 3-5 strategic questions that will help improve its effectiveness.
 
-Current Prompt: {CURRENT_PROMPT}
-Context: {CONTEXT_ANSWERS}
-Recent Results: {RECENT_RESULTS}
+Current Prompt: {currentPrompt}
+Context: {contextAnswers}
+Recent Results: {recentResults}
 
 Focus on:
 - Identifying ambiguities
@@ -41,18 +78,33 @@ Focus on:
 - Suggesting improvements
 - Addressing potential failure modes
 
-Return your response as a JSON array of question objects:
+**CRITICAL: Return ONLY a valid JSON array. No markdown, no code blocks, no additional text.**
+
+**Expected JSON Structure:**
 [
   {
     "id": "q1",
-    "priority": "High|Medium|Low",
+    "priority": "High",
     "question": "Your question here",
     "why_this_matters": "Explanation of why this question is important",
-    "category": "Clarity|Constraints|Output Format|Edge Cases|etc"
+    "category": "Clarity"
+  },
+  {
+    "id": "q2",
+    "priority": "Medium",
+    "question": "Another question",
+    "why_this_matters": "Why this matters",
+    "category": "Constraints"
   }
-]`,
-    requiredVariables: ['CURRENT_PROMPT'],
-    optionalVariables: ['CONTEXT_ANSWERS', 'RECENT_RESULTS'],
+]
+
+**Valid values:**
+- priority: "High", "Medium", or "Low"
+- category: "Clarity", "Constraints", "Output Format", "Edge Cases", "Context", "Requirements"
+
+Generate the JSON array now:`,
+    requiredVariables: ['currentPrompt'],
+    optionalVariables: ['contextAnswers', 'recentResults'],
     category: 'analysis',
   },
 
@@ -62,10 +114,10 @@ Return your response as a JSON array of question objects:
     description: 'Creates test examples for prompt validation',
     template: `You are an expert at creating test cases for prompts. Generate 5-7 diverse examples to test and validate the given prompt.
 
-Target Prompt: {USER_PROMPT}
-Use Case: {USE_CASE_CONTEXT}
-Requirements: {REQUIREMENTS}
-Known Failures: {PREVIOUS_FAILURES}
+Target Prompt: {userPrompt}
+Use Case: {useCaseContext}
+Requirements: {requirements}
+Known Failures: {previousFailures}
 
 Create examples covering:
 - Ideal cases (perfect scenarios)
@@ -74,34 +126,48 @@ Create examples covering:
 - Complex cases (multi-step requirements)
 - Error cases (potential failures)
 
-Return as JSON array:
+**CRITICAL: Return ONLY a valid JSON array. No markdown, no code blocks, no additional text.**
+
+**Expected JSON Structure:**
 [
   {
     "id": 1,
-    "type": "ideal|common|edge|complex|error",
+    "type": "ideal",
     "input": "Example input text",
     "expected_output": "Expected response",
     "why_valuable": "Why this example is useful",
     "tests_for": "What this example validates"
+  },
+  {
+    "id": 2,
+    "type": "edge",
+    "input": "Another example",
+    "expected_output": "Expected output",
+    "why_valuable": "Value explanation",
+    "tests_for": "What it tests"
   }
-]`,
-    requiredVariables: ['USER_PROMPT', 'USE_CASE_CONTEXT'],
-    optionalVariables: ['REQUIREMENTS', 'PREVIOUS_FAILURES'],
+]
+
+**Valid type values:** "ideal", "common", "edge", "complex", "error"
+
+Generate the JSON array now:`,
+    requiredVariables: ['userPrompt', 'useCaseContext'],
+    optionalVariables: ['requirements', 'previousFailures'],
     category: 'generation',
   },
 
-  FEEDBACK_ANALYSIS: {
-    id: 'feedback_analysis',
-    name: 'Feedback Analyzer and Prompt Improver',
+  PROMPT_IMPROVEMENT: {
+    id: 'prompt_improvement',
+    name: 'Prompt Improver',
     description: 'Analyzes feedback and generates improved prompt versions',
     template: `You are a prompt refinement specialist. Analyze the user feedback and generate an improved version of the prompt.
 
-Current Prompt: {CURRENT_PROMPT}
-Previous Result: {PREVIOUS_RESULT}
-Current Result: {CURRENT_RESULT}
-User Evaluation: {BETTER_OR_WORSE}
-User Feedback: {USER_FEEDBACK}
-Debug Info: {DEBUG_INFO}
+Current Prompt: {currentPrompt}
+Previous Result: {previousResult}
+Current Result: {currentResult}
+User Evaluation: {betterOrWorse}
+User Feedback: {userFeedback}
+Debug Info: {debugInfo}
 
 Based on the feedback, create an improved version that:
 1. Addresses the specific issues mentioned
@@ -109,56 +175,27 @@ Based on the feedback, create an improved version that:
 3. Adds clarity where needed
 4. Improves structure and instructions
 
-Return only the improved prompt without explanations.`,
-    requiredVariables: ['CURRENT_PROMPT', 'PREVIOUS_RESULT', 'CURRENT_RESULT', 'BETTER_OR_WORSE', 'USER_FEEDBACK'],
-    optionalVariables: ['DEBUG_INFO'],
-    category: 'improvement',
-  },
+**CRITICAL: Return ONLY a valid JSON object. No markdown, no code blocks, no additional text.**
 
-  PROMPT_ANALYSIS: {
-    id: 'prompt_analysis',
-    name: 'Prompt Quality Analyzer',
-    description: 'Analyzes prompt quality and identifies improvement areas',
-    template: `You are a prompt quality analyst. Evaluate the provided prompt and identify areas for improvement.
-
-Prompt to Analyze: {USER_PROMPT}
-Intended Use: {USE_CASE}
-
-Analyze the prompt for:
-1. Clarity and specificity
-2. Completeness of instructions
-3. Potential ambiguities
-4. Missing constraints
-5. Output format clarity
-
-Return analysis as JSON:
+**Expected JSON Structure:**
 {
-  "strengths": ["List of what works well"],
-  "improvement_areas": [
-    {
-      "area": "clarity|completeness|structure|specificity|flexibility|efficiency",
-      "issue": "Specific problem identified",
-      "suggestion": "How to improve this area"
-    }
+  "improved_prompt": "The improved version of the prompt",
+  "changes_made": [
+    "First specific change made",
+    "Second specific change made"
   ],
-  "overall_score": "1-10 rating",
-  "priority_fixes": ["Most important issues to address"]
-}`,
-    requiredVariables: ['USER_PROMPT'],
-    optionalVariables: ['USE_CASE'],
-    category: 'analysis',
-  },
+  "reasoning": "Why these changes will improve the prompt"
+}
 
-  TEST_PROMPT: {
-    id: 'test_prompt',
-    name: 'Prompt Tester',
-    description: 'Tests a prompt with given input and evaluates output',
-    template: `{PROMPT_TO_TEST}
+**Important:**
+- The "improved_prompt" field should contain the complete improved prompt
+- The "changes_made" array should list specific modifications
+- The "reasoning" should explain the rationale behind the changes
 
-Input: {TEST_INPUT}`,
-    requiredVariables: ['PROMPT_TO_TEST', 'TEST_INPUT'],
-    optionalVariables: [],
-    category: 'utility',
+Generate the JSON response now:`,
+    requiredVariables: ['currentPrompt', 'previousResult', 'currentResult', 'betterOrWorse', 'userFeedback'],
+    optionalVariables: ['debugInfo'],
+    category: 'improvement',
   },
 }
 
@@ -190,4 +227,45 @@ export function validateTemplateVariables(templateId: string, variables: Record<
     isValid: missingVariables.length === 0,
     missingVariables,
   }
+}
+
+// Helper function to substitute variables in template
+export function substituteVariables(template: string, variables: Record<string, string>): string {
+  let result = template
+  
+  // Replace all {variableName} patterns with actual values
+  Object.entries(variables).forEach(([key, value]) => {
+    const pattern = new RegExp(`\\{${key}\\}`, 'g')
+    result = result.replace(pattern, value || '')
+  })
+  
+  return result
+}
+
+// Helper function to build complete prompt from template
+export function buildPrompt(templateId: string, variables: Record<string, string>): {
+  success: boolean
+  prompt?: string
+  error?: string
+} {
+  const template = getTemplate(templateId)
+  if (!template) {
+    return { success: false, error: 'Template not found' }
+  }
+
+  const validation = validateTemplateVariables(templateId, variables)
+  if (!validation.isValid) {
+    return { 
+      success: false, 
+      error: `Missing required variables: ${validation.missingVariables.join(', ')}` 
+    }
+  }
+
+  const prompt = substituteVariables(template.template, variables)
+  return { success: true, prompt }
+}
+
+// Get all available template IDs
+export function getTemplateIds(): string[] {
+  return Object.keys(PROMPT_TEMPLATES)
 }
