@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, ArrowLeft } from 'lucide-react'
+import { Suspense } from 'react'
 
 const errorMessages = {
   Configuration: 'There is a problem with the server configuration.',
@@ -11,7 +12,7 @@ const errorMessages = {
   Default: 'An unexpected error occurred during authentication.',
 }
 
-export default function AuthError() {
+function AuthErrorContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const error = searchParams.get('error') as keyof typeof errorMessages
@@ -52,5 +53,17 @@ export default function AuthError() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AuthError() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0D1117] flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    }>
+      <AuthErrorContent />
+    </Suspense>
   )
 }
