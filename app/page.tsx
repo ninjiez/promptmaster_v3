@@ -5,14 +5,13 @@ import { useSession } from "next-auth/react"
 import InitialView from "@/components/prompt-forensics/initial-view"
 import PromptTypeSelectionView from "@/components/prompt-forensics/prompt-type-selection-view"
 import WorkingView from "@/components/prompt-forensics/working-view"
-import TopNav from "@/components/prompt-forensics/top-nav"
 import FeedbackView from "@/components/prompt-forensics/feedback-view"
-import LoginModal from "@/components/prompt-forensics/login-modal"
-import TokenPurchaseModal from "@/components/prompt-forensics/token-purchase-modal"
 import IdeaInputView from "@/components/prompt-forensics/idea-input-view"
+import { useModal } from "@/lib/contexts/modal-context"
 
 export default function PromptForensicsPage() {
   const { data: session, status } = useSession()
+  const { handleShowLoginModal, handleShowTokenModal } = useModal()
   
   console.log('🔍 Main Page - Session state:', {
     status,
@@ -25,8 +24,6 @@ export default function PromptForensicsPage() {
     "initial",
   )
   const [promptType, setPromptType] = useState<"system-user" | "direct">("system-user")
-  const [showLoginModal, setShowLoginModal] = useState(false)
-  const [showTokenModal, setShowTokenModal] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isFromPromptInput, setIsFromPromptInput] = useState(false)
   const [generatedPromptData, setGeneratedPromptData] = useState<any>(null)
@@ -41,43 +38,19 @@ export default function PromptForensicsPage() {
     setView("prompt-type-selection")
   }
 
-  const handleShowLoginModal = () => {
-    if (!session) {
-      setShowLoginModal(true)
-    }
-  }
-
-  const handleCloseLoginModal = () => {
-    setShowLoginModal(false)
-  }
-
-  const handleShowTokenModal = () => {
-    setShowTokenModal(true)
-  }
-
-  const handleCloseTokenModal = () => {
-    setShowTokenModal(false)
-  }
-
-  const handleLogin = () => {
-    setShowLoginModal(false)
-    setView("working")
-    console.log("User logged in")
-  }
-
   const handlePromptTypeSelected = (type: "system-user" | "direct") => {
     setPromptType(type)
     if (!isFromPromptInput) {
       // Coming from idea flow - check if user is authenticated
       if (!session) {
-        setShowLoginModal(true)
+        handleShowLoginModal()
       } else {
         setView("working")
       }
     } else {
       // Coming from prompt input flow - check if user is authenticated
       if (!session) {
-        setShowLoginModal(true)
+        handleShowLoginModal()
       } else {
         setView("working")
       }
@@ -124,44 +97,31 @@ export default function PromptForensicsPage() {
   }
 
   return (
-    <div className="bg-[#0D1117] text-white min-h-screen font-sans antialiased flex flex-col">
-      <TopNav
-        showBackButton={view !== "initial"}
-        onBack={handleGoBack}
-        promptType={promptType}
-        onPromptTypeChange={handlePromptTypeChange}
-        onNavigateToFeedback={handleNavigateToFeedback}
-        onShowLogin={handleShowLoginModal}
-      />
-      <main
-        className={`${view === "working" ? "min-h-screen pt-20 px-6" : "flex-grow flex flex-col items-center justify-center overflow-auto"} ${isGenerating ? "blur-sm" : ""}`}
-      >
-        {view === "initial" && <InitialView onIdeaStart={handleIdeaStart} onPromptStart={handlePromptStart} />}
-        {view === "idea-input" && (
-          <IdeaInputView
-            onGenerateV1={handleGenerateV1}
-            onShowLoginModal={handleShowLoginModal}
-            onShowTokenModal={handleShowTokenModal}
-            onStartGenerating={handleStartGenerating}
-            onStopGenerating={handleStopGenerating}
-          />
-        )}
-        {view === "prompt-type-selection" && (
-          <PromptTypeSelectionView onPromptTypeSelected={handlePromptTypeSelected} />
-        )}
-        {view === "working" && (
-          <WorkingView
-            promptType={promptType}
-            onShowLoginModal={handleShowLoginModal}
-            isFromPromptInput={isFromPromptInput}
-            generatedPromptData={generatedPromptData}
-          />
-        )}
-        {view === "feedback" && <FeedbackView />}
-      </main>
-
-      <LoginModal isOpen={showLoginModal} onClose={handleCloseLoginModal} onLogin={handleLogin} />
-      <TokenPurchaseModal isOpen={showTokenModal} onClose={handleCloseTokenModal} />
-    </div>
+    <main
+      className={`${view === "working" ? "min-h-screen pt-20 px-6" : "flex-grow flex flex-col items-center justify-center overflow-auto"} ${isGenerating ? "blur-sm" : ""}`}
+    >
+      {view === "initial" && <InitialView onIdeaStart={handleIdeaStart} onPromptStart={handlePromptStart} />}
+      {view === "idea-input" && (
+        <IdeaInputView
+          onGenerateV1={handleGenerateV1}
+          onShowLoginModal={handleShowLoginModal}
+          onShowTokenModal={handleShowTokenModal}
+          onStartGenerating={handleStartGenerating}
+          onStopGenerating={handleStopGenerating}
+        />
+      )}
+      {view === "prompt-type-selection" && (
+        <PromptTypeSelectionView onPromptTypeSelected={handlePromptTypeSelected} />
+      )}
+      {view === "working" && (
+        <WorkingView
+          promptType={promptType}
+          onShowLoginModal={handleShowLoginModal}
+          isFromPromptInput={isFromPromptInput}
+          generatedPromptData={generatedPromptData}
+        />
+      )}
+      {view === "feedback" && <FeedbackView />}
+    </main>
   )
 }

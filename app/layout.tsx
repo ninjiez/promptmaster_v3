@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { AuthProvider } from '../lib/auth/provider'
+import LayoutWrapper from './layout-wrapper'
 
 export const metadata: Metadata = {
   title: 'PromptGOD - AI Prompt Engineering Made Easy',
@@ -17,7 +18,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          {children}
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
         </AuthProvider>
       </body>
     </html>
