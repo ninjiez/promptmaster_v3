@@ -118,10 +118,8 @@ export async function POST(request: NextRequest) {
           userId: user.id,
           title: aiResponse.title,
           description: aiResponse.description || '',
-          tags: aiResponse.tags || [],
           category: context || 'general',
           isPublic: false,
-          tokensUsed: tokensToDeduct,
         }
       })
 
@@ -134,7 +132,7 @@ export async function POST(request: NextRequest) {
           userPrompt: aiResponse.content,
           content: aiResponse.content,
           isActive: true,
-          tokensUsed: tokensUsed,
+          tokensCost: tokensUsed,
           generationParams: {
             temperature: 0.7,
             maxOutputTokens: 20000,
@@ -164,7 +162,6 @@ export async function POST(request: NextRequest) {
         title: aiResponse.title,
         description: aiResponse.description || '',
         content: aiResponse.content,
-        tags: aiResponse.tags || [],
         suggestions: aiResponse.suggestions || []
       },
       usage: usageMetrics

@@ -29,9 +29,7 @@ interface Prompt {
   title: string
   description: string
   category: string
-  tags: string[]
   isPublic: boolean
-  tokensUsed: number
   createdAt: string
   updatedAt: string
   versionCount: number
@@ -164,7 +162,7 @@ export default function DashboardPage() {
 
         const stats = {
           totalPrompts: allPrompts.length,
-          totalTokensUsed: allPrompts.reduce((sum: number, p: Prompt) => sum + p.tokensUsed, 0),
+          totalTokensUsed: 0, // TODO: Calculate from prompt versions
           currentTokenBalance: 0, // Will be updated with user profile data
           promptsThisMonth: allPrompts.filter((p: Prompt) => 
             new Date(p.createdAt) >= thisMonth
@@ -239,16 +237,16 @@ export default function DashboardPage() {
       </div>
     )
   }
-  
+
   console.log('🔍 Dashboard - Rendering main dashboard content')
 
   return (
-    <div className="min-h-screen bg-[#0D1117] text-white">
+    <div className="relative min-h-screen">
       {/* Spotlight effect */}
       <Spotlight className="-top-20 -right-20 md:-top-10 md:-right-10" fill="white" />
       
       {/* Header */}
-      <div className="relative z-10 container mx-auto px-6 py-8">
+      <div className="relative z-10 container mx-auto px-6 py-8 pt-24">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
@@ -352,7 +350,6 @@ export default function DashboardPage() {
               <option value="updatedAt-desc">Recently Updated</option>
               <option value="createdAt-desc">Recently Created</option>
               <option value="title-asc">Title A-Z</option>
-              <option value="tokensUsed-desc">Most Tokens Used</option>
             </select>
           </div>
         </div>
@@ -401,17 +398,9 @@ export default function DashboardPage() {
                   </div>
                   
                   <div className="flex flex-wrap gap-1 mb-3">
-                    <Badge variant="secondary" className="text-xs">
-                      {prompt.category}
-                    </Badge>
-                    {prompt.tags.slice(0, 2).map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {prompt.tags.length > 2 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{prompt.tags.length - 2}
+                    {prompt.category && (
+                      <Badge variant="secondary" className="text-xs">
+                        {prompt.category}
                       </Badge>
                     )}
                   </div>
@@ -422,7 +411,7 @@ export default function DashboardPage() {
                         <div className={`w-2 h-2 rounded-full ${getVersionStatusColor(prompt.versionCount)}`} />
                         V{prompt.versionCount}
                       </span>
-                      <span>{prompt.tokensUsed} tokens</span>
+                      <span>V{prompt.versionCount}</span>
                     </div>
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />

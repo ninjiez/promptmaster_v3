@@ -46,14 +46,12 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: any = {
       userId: user.id,
-      deletedAt: null, // Only non-deleted prompts
     }
 
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { tags: { hasSome: [search] } }
+        { description: { contains: search, mode: 'insensitive' } }
       ]
     }
 
@@ -100,9 +98,7 @@ export async function GET(request: NextRequest) {
         title: prompt.title,
         description: prompt.description,
         category: prompt.category,
-        tags: prompt.tags,
         isPublic: prompt.isPublic,
-        tokensUsed: prompt.tokensUsed,
         createdAt: prompt.createdAt,
         updatedAt: prompt.updatedAt,
         versionCount: prompt._count.versions,
@@ -148,7 +144,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json()
-    const { title, description, category, tags, isPublic } = body
+    const { title, description, category, isPublic } = body
 
     // Validate required fields
     if (!title?.trim()) {
@@ -162,9 +158,7 @@ export async function POST(request: NextRequest) {
         title: title.trim(),
         description: description?.trim() || '',
         category: category || 'general',
-        tags: Array.isArray(tags) ? tags : [],
-        isPublic: Boolean(isPublic),
-        tokensUsed: 0
+        isPublic: Boolean(isPublic)
       },
       include: {
         versions: {
@@ -187,9 +181,7 @@ export async function POST(request: NextRequest) {
       title: prompt.title,
       description: prompt.description,
       category: prompt.category,
-      tags: prompt.tags,
       isPublic: prompt.isPublic,
-      tokensUsed: prompt.tokensUsed,
       createdAt: prompt.createdAt,
       updatedAt: prompt.updatedAt,
       versionCount: prompt._count.versions,

@@ -29,8 +29,7 @@ export async function GET(
     const prompt = await prisma.prompt.findFirst({
       where: {
         id: promptId,
-        userId: user.id,
-        deletedAt: null
+        userId: user.id
       },
       include: {
         user: {
@@ -72,9 +71,7 @@ export async function GET(
       title: prompt.title,
       description: prompt.description,
       category: prompt.category,
-      tags: prompt.tags,
       isPublic: prompt.isPublic,
-      tokensUsed: prompt.tokensUsed,
       createdAt: prompt.createdAt,
       updatedAt: prompt.updatedAt,
       user: prompt.user,
@@ -85,7 +82,7 @@ export async function GET(
         userPrompt: version.userPrompt,
         content: version.content,
         isActive: version.isActive,
-        tokensUsed: version.tokensUsed,
+        tokensUsed: version.tokensCost,
         createdAt: version.createdAt,
         generationParams: version.generationParams,
         metadata: version.metadata,
@@ -99,7 +96,7 @@ export async function GET(
         versionCount: prompt.versions.length,
         testCount: prompt.tests.length,
         feedbackCount: prompt.feedback.length,
-        totalTokensUsed: prompt.tokensUsed
+        totalTokensUsed: prompt.versions.reduce((sum, v) => sum + v.tokensCost, 0)
       }
     })
 
@@ -149,7 +146,7 @@ export async function PUT(
 
     // Parse request body
     const body = await request.json()
-    const { title, description, category, tags, isPublic } = body
+    const { title, description, category, isPublic } = body
 
     // Validate required fields
     if (title !== undefined && !title?.trim()) {
@@ -163,7 +160,6 @@ export async function PUT(
         ...(title !== undefined && { title: title.trim() }),
         ...(description !== undefined && { description: description?.trim() || '' }),
         ...(category !== undefined && { category }),
-        ...(tags !== undefined && { tags: Array.isArray(tags) ? tags : [] }),
         ...(isPublic !== undefined && { isPublic: Boolean(isPublic) }),
         updatedAt: new Date()
       },
@@ -188,9 +184,7 @@ export async function PUT(
       title: updatedPrompt.title,
       description: updatedPrompt.description,
       category: updatedPrompt.category,
-      tags: updatedPrompt.tags,
       isPublic: updatedPrompt.isPublic,
-      tokensUsed: updatedPrompt.tokensUsed,
       createdAt: updatedPrompt.createdAt,
       updatedAt: updatedPrompt.updatedAt,
       versionCount: updatedPrompt._count.versions,
@@ -247,7 +241,7 @@ export async function DELETE(
     await prisma.prompt.update({
       where: { id: promptId },
       data: {
-        deletedAt: new Date(),
+        status: 'ARCHIVED',
         updatedAt: new Date()
       }
     })
