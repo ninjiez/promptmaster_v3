@@ -13,6 +13,14 @@ import IdeaInputView from "@/components/prompt-forensics/idea-input-view"
 
 export default function PromptForensicsPage() {
   const { data: session, status } = useSession()
+  
+  console.log('🔍 Main Page - Session state:', {
+    status,
+    hasSession: !!session,
+    userEmail: session?.user?.email,
+    tokenBalance: session?.user?.tokenBalance
+  })
+  
   const [view, setView] = useState<"initial" | "idea-input" | "prompt-type-selection" | "working" | "feedback">(
     "initial",
   )

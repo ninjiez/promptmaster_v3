@@ -16,23 +16,75 @@ export const authConfig: NextAuthOptions = {
     signIn: '/', // We'll use the modal on the main page
     error: '/auth/error',
   },
+  cookies: {
+    state: {
+      name: `next-auth.state`,
+      options: {
+        httpOnly: true,
+        sameSite: 'none',
+        path: '/',
+        secure: true,
+        maxAge: 900, // 15 minutes
+      },
+    },
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'none',
+        path: '/',
+        secure: true,
+      },
+    },
+    callbackUrl: {
+      name: `next-auth.callback-url`,
+      options: {
+        httpOnly: true,
+        sameSite: 'none',
+        path: '/',
+        secure: true,
+      },
+    },
+    csrfToken: {
+      name: `next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'none',
+        path: '/',
+        secure: true,
+      },
+    },
+  },
+  useSecureCookies: true,
   session: {
-    strategy: 'database',
+    strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
     async signIn({ user, account, profile }) {
+      console.log('🔍 NextAuth - signIn callback:', {
+        userEmail: user?.email,
+        accountProvider: account?.provider,
+        profileEmail: profile?.email
+      })
       // Allow sign in
       return true
     },
-    async session({ session, user }) {
-      // Add user ID and token balance to session
-      if (session?.user) {
-        session.user.id = user.id
+    async session({ session, token }) {
+      console.log('🔍 NextAuth - session callback:', {
+        hasSession: !!session,
+        hasToken: !!token,
+        tokenSub: token?.sub,
+        sessionUserEmail: session?.user?.email
+      })
+      
+      // Add user ID and token balance to session from JWT
+      if (session?.user && token?.sub) {
+        session.user.id = token.sub
         
         // Get fresh user data with token balance
         const userData = await prisma.user.findUnique({
-          where: { id: user.id },
+          where: { id: token.sub },
           select: {
             id: true,
             tokenBalance: true,
@@ -49,7 +101,15 @@ export const authConfig: NextAuthOptions = {
       }
       return session
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
+      console.log('🔍 NextAuth - jwt callback:', {
+        hasToken: !!token,
+        hasUser: !!user,
+        hasAccount: !!account,
+        userEmail: user?.email,
+        tokenSub: token?.sub
+      })
+      
       if (user) {
         token.id = user.id
       }
