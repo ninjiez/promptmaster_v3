@@ -1,243 +1,295 @@
-# PromptGOD Full-Stack SAAS Implementation Tasks
+# PromptMaster v3 - Development Tasks
 
-## Overview
-This document tracks the implementation progress of converting the PromptGOD frontend MVP into a fully functional SAAS application with backend, database, authentication, payments, and AI integration.
+## Critical Issues (Immediate)
 
-## ✅ Phase 1: Infrastructure Setup (COMPLETED)
+### 🚨 Core Functionality Gaps
 
-### 1.1 Docker & Database Setup
-- [x] Create `docker-compose.yml` for PostgreSQL
-- [x] Configure PostgreSQL container with proper volumes
-- [x] Create `.env.example` with all required environment variables
-- [x] Create `.env.local` and add to `.gitignore`
-- [x] Test database connection
+#### Prompt Persistence & Management
+- [ ] **CRITICAL**: Fix prompt saving - Generated prompts are NOT being saved to database
+  - [ ] Update `/api/prompts/generate` to save prompts after generation
+  - [ ] Save prompt versions properly with V1, V2, V3 tracking
+  - [ ] Link questions and examples to prompt versions
+- [ ] Create CRUD API endpoints for prompts
+  - [ ] GET `/api/prompts` - List user's prompts with pagination
+  - [ ] GET `/api/prompts/[id]` - Get single prompt with versions
+  - [ ] PUT `/api/prompts/[id]` - Update prompt metadata
+  - [ ] DELETE `/api/prompts/[id]` - Soft delete prompts
+  - [ ] GET `/api/prompts/[id]/versions` - Get all versions
+- [ ] Build prompt library UI
+  - [ ] Create `/app/dashboard/page.tsx` with prompt grid/list view
+  - [ ] Add search, filter, and sort functionality
+  - [ ] Show prompt creation date, last modified, token usage
+  - [ ] Add quick actions (view, edit, delete, duplicate)
 
-### 1.2 Prisma Setup
-- [x] Install Prisma dependencies (`prisma`, `@prisma/client`)
-- [x] Initialize Prisma with PostgreSQL
-- [x] Create Prisma schema with all models:
-  - [x] User model
-  - [x] Prompt model
-  - [x] PromptVersion model
-  - [x] TestResult model
-  - [x] Question model
-  - [x] Example model
-  - [x] Feedback model
-  - [x] Subscription model
-  - [x] TokenTransaction model
-- [x] Run initial migration
-- [x] Generate Prisma client
-- [x] Create database seed script
+#### User Dashboard
+- [ ] Create main dashboard page at `/app/dashboard`
+  - [ ] Display user stats (total prompts, tokens used, subscription status)
+  - [ ] Show recent prompts with quick access
+  - [ ] Add token balance and usage graph
+  - [ ] Include subscription tier and upgrade CTA
+- [ ] Create prompt detail page at `/app/prompts/[id]`
+  - [ ] Show all versions with comparison view
+  - [ ] Display questions and examples
+  - [ ] Add version switching and rollback
+  - [ ] Include performance metrics
 
-### 1.3 Additional Infrastructure
-- [x] Create Prisma client utilities (`lib/database/`)
-- [x] Create database helper functions
-- [x] Create prompt template system (`lib/prompts/`)
-- [x] Set up proper TypeScript types
+## High Priority (Week 1-2)
 
-## ✅ Phase 2: Authentication (COMPLETED)
+### 💳 Subscription System
 
-### 2.1 NextAuth.js Setup
-- [x] Install NextAuth.js and dependencies
-- [x] Create `/api/auth/[...nextauth]/route.ts`
-- [x] Configure authentication providers:
-  - [x] Google OAuth
-  - [ ] GitHub OAuth (skipped - using Google only)
-  - [ ] Credentials (email/password) (skipped - using OAuth only)
-- [x] Create custom pages:
-  - [x] Use existing login-modal as sign in
-  - [ ] Sign up page (not needed with OAuth)
-  - [x] Error page
-- [x] Implement session callbacks with token balance
-- [x] Add middleware for protected routes
+#### Convert from One-Time to Recurring
+- [ ] Update Stripe configuration
+  - [ ] Create subscription products in Stripe dashboard
+  - [ ] Add monthly/yearly price IDs for each tier
+  - [ ] Update environment variables with new price IDs
+- [ ] Modify payment flow
+  - [ ] Change checkout mode from 'payment' to 'subscription'
+  - [ ] Add subscription management portal link
+  - [ ] Handle subscription lifecycle events
+- [ ] Complete webhook handlers
+  - [ ] `customer.subscription.created` - Activate subscription
+  - [ ] `customer.subscription.updated` - Handle plan changes
+  - [ ] `customer.subscription.deleted` - Downgrade to free
+  - [ ] `invoice.payment_succeeded` - Renew tokens monthly
+  - [ ] `invoice.payment_failed` - Handle failed payments
 
-### 2.2 User Management
-- [x] Create user registration flow (automatic with OAuth)
-- [ ] Implement email verification (not needed with OAuth)
-- [x] Add 1,500 free tokens on signup
-- [x] Create auth utilities and hooks
-- [x] Update login-modal component to use NextAuth
-- [x] Add session provider to layout
+#### Feature Gating
+- [ ] Implement tier-based limits
+  - [ ] Create `lib/subscription/limits.ts` with tier configurations
+  - [ ] Add middleware to check feature availability
+  - [ ] Implement usage tracking (prompts per month, versions per prompt)
+- [ ] Update UI for premium features
+  - [ ] Add lock icons on gated features
+  - [ ] Show upgrade modals when limits reached
+  - [ ] Display remaining usage in dashboard
+- [ ] Gate specific features by tier
+  - [ ] FREE: 5 prompts/month, 3 versions, no examples
+  - [ ] SKEPTIC: 20 prompts/month, 5 versions, 3 examples
+  - [ ] PROMPT_KIDDO: 100 prompts/month, 10 versions, unlimited examples
+  - [ ] PROMPT_ENGINEER: Unlimited prompts, versions, team features
+  - [ ] PROMPT_GOD: All features + API access + priority support
 
-### 2.3 Additional Auth Features
-- [x] Create Prisma adapter for NextAuth
-- [x] Add token balance to session
-- [x] Create auth hooks for easy session access
-- [x] Set up route protection middleware
-- [x] Create authentication error handling
+### 📝 Project/Conversation Management
 
-## 💳 Phase 3: Stripe Integration
+#### Prompt as Projects
+- [ ] Restructure data model
+  - [ ] Rename "Prompt" to "Project" in UI (keep DB as is)
+  - [ ] Add project folders/categories
+  - [ ] Support multiple prompts per project
+- [ ] Create project workspace
+  - [ ] Persistent working view at `/app/projects/[id]`
+  - [ ] Auto-save all changes
+  - [ ] Resume from where user left off
+  - [ ] Show project activity timeline
+- [ ] Implement conversation history
+  - [ ] Track all AI interactions per project
+  - [ ] Show improvement suggestions over time
+  - [ ] Display token usage per conversation
 
-### 3.1 Stripe Setup
-- [ ] Install Stripe SDK
-- [ ] Configure Stripe in environment variables
-- [ ] Create Stripe products for each tier:
-  - [ ] Skeptic (500 tokens - $4.99)
-  - [ ] Prompt Kiddo (2,500 tokens - $9.99)
-  - [ ] Prompt Engineer (10,000 tokens - $19.99)
-  - [ ] Prompt GOD (100,000 tokens - $49.99)
+## Medium Priority (Week 3-4)
 
-### 3.2 Payment Flow
-- [ ] Create `/api/stripe/create-checkout` endpoint
-- [ ] Create `/api/stripe/webhook` endpoint
-- [ ] Implement webhook handlers:
-  - [ ] checkout.session.completed
-  - [ ] customer.subscription.created
-  - [ ] customer.subscription.updated
-  - [ ] customer.subscription.deleted
-- [ ] Create `/api/stripe/portal` for subscription management
-- [ ] Update token purchase modal to use real Stripe
-- [ ] Test payment flow end-to-end
+### 💾 Data Persistence
 
-## 🤖 Phase 4: AI Integration
+#### Questions & Examples
+- [ ] Save generated questions
+  - [ ] Update `/api/questions/generate` to persist to database
+  - [ ] Link questions to prompt versions
+  - [ ] Add answered/unanswered status tracking
+- [ ] Save generated examples
+  - [ ] Update `/api/examples/generate` to persist to database
+  - [ ] Add approval workflow for examples
+  - [ ] Track which examples were tested
+- [ ] Create management UI
+  - [ ] Question answering interface
+  - [ ] Example testing and validation
+  - [ ] Bulk operations for approval/deletion
 
-### 4.1 Google Gemini Setup
-- [ ] Install Google Generative AI SDK
-- [ ] Create AI service layer (`/lib/ai/`)
-- [ ] Implement prompt templates system:
-  - [ ] Create `/lib/prompts/templates.ts`
-  - [ ] Create `/lib/prompts/generator.ts`
-  - [ ] Create `/lib/prompts/types.ts`
-- [ ] Add placeholder prompts for:
-  - [ ] Idea to Prompt Generation
-  - [ ] Question Generation
-  - [ ] Examples Creation
-  - [ ] Feedback Analysis
+#### Version Management
+- [ ] Complete version tracking
+  - [ ] Auto-increment version numbers (V1, V2, V3...)
+  - [ ] Store all generation parameters
+  - [ ] Track parent-child relationships
+- [ ] Add version comparison
+  - [ ] Diff visualization between versions
+  - [ ] Performance metrics per version
+  - [ ] Rollback functionality
+- [ ] Version analytics
+  - [ ] A/B testing results
+  - [ ] Success rate tracking
+  - [ ] User preference learning
 
-### 4.2 AI Endpoints
-- [ ] Create `/api/prompts/generate` - Generate V1 from idea
-- [ ] Create `/api/questions/generate` - Generate optimization questions
-- [ ] Create `/api/examples/generate` - Generate custom examples
-- [ ] Create `/api/prompts/[id]/improve` - Generate next version
-- [ ] Add rate limiting per user tier
-- [ ] Implement response caching
+### 📊 Analytics & Insights
 
-## 📡 Phase 5: Core API Development
+#### Usage Analytics
+- [ ] Create analytics dashboard
+  - [ ] Token usage over time
+  - [ ] Most successful prompts
+  - [ ] Question completion rates
+  - [ ] Example effectiveness
+- [ ] Prompt performance metrics
+  - [ ] Track which prompts get best results
+  - [ ] Identify improvement patterns
+  - [ ] Suggest optimizations based on data
+- [ ] Export analytics data
+  - [ ] CSV export for reports
+  - [ ] API endpoint for external tools
+  - [ ] Scheduled email reports
 
-### 5.1 Prompt Management APIs
-- [ ] Create `/api/prompts` - CRUD operations
-- [ ] Create `/api/prompts/[id]` - Get single prompt
-- [ ] Create `/api/prompts/[id]/versions` - Version management
-- [ ] Create `/api/prompts/[id]/test` - Test prompt execution
-- [ ] Create `/api/prompts/[id]/fork` - Fork prompt
+## Lower Priority (Month 2+)
 
-### 5.2 User Features APIs
-- [ ] Create `/api/feedback/submit` - Submit voting feedback
-- [ ] Create `/api/tokens/balance` - Get user token balance
-- [ ] Create `/api/tokens/deduct` - Deduct tokens for features
-- [ ] Create `/api/tokens/history` - Token transaction history
-- [ ] Create `/api/library` - User's prompt library
+### 👥 Collaboration Features
 
-### 5.3 Admin APIs
-- [ ] Create `/api/admin/users` - User management
-- [ ] Create `/api/admin/prompts` - Prompt moderation
-- [ ] Create `/api/admin/analytics` - Usage analytics
+#### Sharing & Teams
+- [ ] Implement prompt sharing
+  - [ ] Generate shareable links
+  - [ ] Set expiration dates
+  - [ ] Track share analytics
+- [ ] Add team workspaces
+  - [ ] Create organization accounts
+  - [ ] Role-based permissions
+  - [ ] Shared token pools
+- [ ] Commenting system
+  - [ ] Add comments to prompts
+  - [ ] Version-specific feedback
+  - [ ] @mentions and notifications
 
-## 🎨 Phase 6: Frontend Integration
+### 🔧 Admin & Operations
 
-### 6.1 API Client Setup
-- [ ] Create API client utilities
-- [ ] Add proper TypeScript types for all API responses
-- [ ] Implement error handling utilities
-- [ ] Add loading states management
+#### Admin Dashboard
+- [ ] Create admin interface at `/admin`
+  - [ ] User management (search, suspend, modify)
+  - [ ] System metrics and health
+  - [ ] Content moderation queue
+  - [ ] Feature flag management
+- [ ] Support system
+  - [ ] In-app support tickets
+  - [ ] FAQ management
+  - [ ] Announcement system
+- [ ] Monitoring
+  - [ ] Error tracking integration
+  - [ ] Performance monitoring
+  - [ ] Usage alerts
 
-### 6.2 Component Updates
-- [ ] Update InitialView to use real API
-- [ ] Update IdeaInputView with API integration
-- [ ] Update WorkingView with real prompt testing
-- [ ] Update FeedbackView with real submissions
-- [ ] Update TokenPurchaseModal with Stripe
-- [ ] Update ProfileView with real user data
-- [ ] Fix LoginModal with NextAuth
+### 🚀 Production Readiness
 
-### 6.3 State Management
-- [ ] Implement proper token balance tracking
-- [ ] Add real-time updates for token usage
-- [ ] Create prompt version history management
-- [ ] Add optimistic updates for better UX
+#### Security Enhancements
+- [ ] Implement rate limiting
+  - [ ] API rate limits per tier
+  - [ ] DDoS protection
+  - [ ] Abuse detection
+- [ ] Add API authentication
+  - [ ] Generate API keys for users
+  - [ ] OAuth2 for third-party apps
+  - [ ] Webhook security
+- [ ] Security hardening
+  - [ ] CSRF protection
+  - [ ] Content Security Policy
+  - [ ] Input validation everywhere
 
-## 🛡️ Phase 7: Security & Performance
+#### Performance Optimization
+- [ ] Add caching layer
+  - [ ] Redis for session data
+  - [ ] Cache generated content
+  - [ ] CDN for static assets
+- [ ] Database optimization
+  - [ ] Add proper indexes
+  - [ ] Query optimization
+  - [ ] Connection pooling
+- [ ] Frontend optimization
+  - [ ] Code splitting
+  - [ ] Lazy loading
+  - [ ] Image optimization
 
-### 7.1 Security
-- [ ] Add input validation on all endpoints
-- [ ] Implement rate limiting middleware
-- [ ] Add CSRF protection
-- [ ] Secure all environment variables
-- [ ] Implement API key rotation
-- [ ] Add audit logging
+#### Legal & Compliance
+- [ ] Legal documents
+  - [ ] Terms of Service
+  - [ ] Privacy Policy
+  - [ ] Cookie Policy
+  - [ ] Acceptable Use Policy
+- [ ] GDPR compliance
+  - [ ] Data export functionality
+  - [ ] Right to deletion
+  - [ ] Consent management
+  - [ ] Data retention policies
+- [ ] Accessibility
+  - [ ] WCAG 2.1 AA compliance
+  - [ ] Keyboard navigation
+  - [ ] Screen reader support
 
-### 7.2 Performance
-- [ ] Set up Redis for caching
-- [ ] Implement database query optimization
-- [ ] Add pagination to all list endpoints
-- [ ] Optimize bundle size
-- [ ] Implement lazy loading
-- [ ] Add image optimization
+## Nice to Have Features
 
-## 📊 Phase 8: SAAS Features
+### 🎨 Enhanced UI/UX
+- [ ] Dark/light theme toggle
+- [ ] Customizable workspace layouts
+- [ ] Keyboard shortcuts
+- [ ] Mobile app (React Native)
+- [ ] Browser extension
 
-### 8.1 Email & Communications
-- [ ] Set up email service (SendGrid/Resend)
-- [ ] Create email templates:
-  - [ ] Welcome email
-  - [ ] Payment confirmation
-  - [ ] Token low warning
-  - [ ] Monthly usage report
-- [ ] Implement email queue
+### 🤖 Advanced AI Features
+- [ ] Multi-model support (GPT-4, Claude, etc.)
+- [ ] Custom fine-tuned models
+- [ ] Prompt chaining workflows
+- [ ] Automated prompt optimization
+- [ ] Industry-specific templates
 
-### 8.2 Analytics & Monitoring
-- [ ] Set up PostHog/Mixpanel
-- [ ] Implement user event tracking
-- [ ] Add Sentry error tracking
-- [ ] Create monitoring dashboards
-- [ ] Set up uptime monitoring
+### 🔗 Integrations
+- [ ] Zapier integration
+- [ ] Slack bot
+- [ ] VS Code extension
+- [ ] GitHub integration
+- [ ] API marketplace
 
-### 8.3 Legal & Compliance
-- [ ] Create Terms of Service page
-- [ ] Create Privacy Policy page
-- [ ] Add cookie consent
-- [ ] Implement GDPR compliance
-- [ ] Add data export functionality
+### 📚 Educational Content
+- [ ] Interactive tutorials
+- [ ] Prompt engineering course
+- [ ] Best practices library
+- [ ] Community challenges
+- [ ] Certification program
 
-## 🚢 Phase 9: Deployment Preparation
+## Development Process
 
-### 9.1 Production Setup
-- [ ] Configure production database
-- [ ] Set up production environment variables
-- [ ] Configure Vercel deployment
+### Phase 1: Core Fixes (Week 1)
+1. Fix prompt persistence
+2. Create basic CRUD operations
+3. Build minimal dashboard
+4. Test end-to-end flow
+
+### Phase 2: Subscriptions (Week 2)
+1. Implement Stripe subscriptions
+2. Add feature gating
+3. Complete webhook handlers
+4. Test payment flows
+
+### Phase 3: Enhanced Features (Week 3-4)
+1. Complete version management
+2. Add analytics dashboard
+3. Implement sharing features
+4. Polish UI/UX
+
+### Phase 4: Production Prep (Month 2)
+1. Security hardening
+2. Performance optimization
+3. Legal compliance
+4. Launch preparation
+
+## Success Metrics
+- [ ] User retention: 40% monthly active users
+- [ ] Conversion rate: 5% free to paid
+- [ ] Churn rate: <10% monthly
+- [ ] NPS score: >50
+- [ ] Response time: <200ms p95
+
+## Technical Debt
+- [ ] Add comprehensive test suite
 - [ ] Set up CI/CD pipeline
-- [ ] Create staging environment
+- [ ] Document all APIs
+- [ ] Create developer docs
+- [ ] Implement error boundaries
+- [ ] Add loading states everywhere
+- [ ] Standardize error messages
+- [ ] Refactor duplicate code
 
-### 9.2 Testing
-- [ ] Write unit tests for utilities
-- [ ] Write integration tests for APIs
-- [ ] Create E2E tests for critical flows
-- [ ] Performance testing
-- [ ] Security testing
+---
 
-### 9.3 Documentation
-- [ ] Create API documentation
-- [ ] Write deployment guide
-- [ ] Create user documentation
-- [ ] Document environment setup
-- [ ] Create troubleshooting guide
-
-## 📋 Current Status
-
-**Phase**: Not Started
-**Last Updated**: [Current Date]
-**Blockers**: None
-
-## Notes
-
-- Each task should be completed in order within its phase
-- Phases can be worked on in parallel where dependencies allow
-- Update status as tasks are completed
-- Add any blockers or issues encountered
-- Document any deviations from the original plan
-
-## Next Steps
-
-1. Start with Phase 1.1 - Docker & Database Setup
-2. Set up development environment
-3. Begin implementing authentication
+Last Updated: ${new Date().toISOString()}
+Priority Levels: 🚨 Critical | 🔴 High | 🟡 Medium | 🟢 Low | 💡 Nice to Have
