@@ -5,33 +5,33 @@
 ### 🚨 Core Functionality Gaps
 
 #### Prompt Persistence & Management
-- [ ] **CRITICAL**: Fix prompt saving - Generated prompts are NOT being saved to database
-  - [ ] Update `/api/prompts/generate` to save prompts after generation
-  - [ ] Save prompt versions properly with V1, V2, V3 tracking
-  - [ ] Link questions and examples to prompt versions
-  - [ ] Add prompt metadata (title, description, created date, etc.)
-- [ ] Create CRUD API endpoints for prompts
-  - [ ] GET `/api/prompts` - List user's prompts with pagination
-  - [ ] GET `/api/prompts/[id]` - Get single prompt with versions
-  - [ ] PUT `/api/prompts/[id]` - Update prompt metadata
-  - [ ] DELETE `/api/prompts/[id]` - Soft delete prompts
-  - [ ] GET `/api/prompts/[id]/versions` - Get all versions
+- [x] **CRITICAL**: Fix prompt saving - Generated prompts are NOT being saved to database
+  - [x] Update `/api/prompts/generate` to save prompts after generation
+  - [x] Save prompt versions properly with V1, V2, V3 tracking
+  - [x] Link questions and examples to prompt versions
+  - [x] Add prompt metadata (title, description, created date, etc.)
+- [x] Create CRUD API endpoints for prompts
+  - [x] GET `/api/prompts` - List user's prompts with pagination
+  - [x] GET `/api/prompts/[id]` - Get single prompt with versions
+  - [x] PUT `/api/prompts/[id]` - Update prompt metadata
+  - [x] DELETE `/api/prompts/[id]` - Soft delete prompts
+  - [x] GET `/api/prompts/[id]/versions` - Get all versions
 - [ ] Build prompt library UI using existing components
-  - [ ] Create `/app/dashboard/page.tsx` with prompt grid/list view
+  - [x] Create `/app/dashboard/page.tsx` with prompt grid/list view
   - [ ] Add search, filter, and sort functionality
   - [ ] Show prompt creation date, last modified, token usage
   - [ ] Add quick actions (view, edit, delete, duplicate)
 
 #### Replace Mock Data with Real Implementation
-- [ ] **working-view.tsx**: Replace mock version history with real data
-  - [ ] Connect to actual prompt versions from database
-  - [ ] Integrate with real AI generation APIs (already done for generation)
-  - [ ] Save voting feedback to database for V3 improvements
+- [x] **working-view.tsx**: Replace mock version history with real data
+  - [x] Connect to actual prompt versions from database
+  - [x] Integrate with real AI generation APIs (already done for generation)
+  - [x] Save voting feedback to database for V3 improvements
   - [ ] Connect questions/examples panels to database
-- [ ] **profile-view.tsx**: Remove mock session, use real NextAuth
-  - [ ] Replace mockSession with real useSession from next-auth
-  - [ ] Add user profile management (name, email, preferences)
-  - [ ] Display real token balance and usage history
+- [x] **profile-view.tsx**: Remove mock session, use real NextAuth
+  - [x] Replace mockSession with real useSession from next-auth
+  - [x] Add user profile management (name, email, preferences)
+  - [x] Display real token balance and usage history
 - [ ] **feedback-view.tsx**: Connect to backend APIs
   - [ ] Create `/api/feedback` endpoint for submissions
   - [ ] Create `/api/feedback/requests` for feature requests
@@ -39,32 +39,32 @@
   - [ ] Show user's own feedback history
 
 #### User Dashboard Integration
-- [ ] Create main dashboard page at `/app/dashboard`
-  - [ ] Use existing components as building blocks
-  - [ ] Display user stats (total prompts, tokens used, token balance)
-  - [ ] Show recent prompts with quick access
+- [x] Create main dashboard page at `/app/dashboard`
+  - [x] Use existing components as building blocks
+  - [x] Display user stats (total prompts, tokens used, token balance)
+  - [x] Show recent prompts with quick access
   - [ ] Add token usage graph over time
-  - [ ] Include token purchase CTA when balance is low
-- [ ] Create prompt detail page at `/app/prompts/[id]`
-  - [ ] Use working-view.tsx as foundation
-  - [ ] Show all versions with comparison view
-  - [ ] Display questions and examples from database
-  - [ ] Add version switching and rollback functionality
-  - [ ] Include performance metrics per version
+  - [x] Include token purchase CTA when balance is low
+- [x] Create prompt detail page at `/app/prompts/[id]`
+  - [x] Use working-view.tsx as foundation
+  - [x] Show all versions with comparison view
+  - [x] Display questions and examples from database
+  - [x] Add version switching and rollback functionality
+  - [x] Include performance metrics per version
 
 ## High Priority (Week 1-2)
 
 ### 💳 Token-Based Payment System
 
 #### Stripe Token Packages (Remove Subscriptions)
-- [ ] Update Stripe configuration for one-time purchases only
-  - [ ] Create token package products in Stripe dashboard
-  - [ ] STARTER: 1,000 tokens - $5
-  - [ ] SKEPTIC: 5,000 tokens - $20  
-  - [ ] PROMPT_KIDDO: 15,000 tokens - $50
-  - [ ] PROMPT_ENGINEER: 50,000 tokens - $150
-  - [ ] PROMPT_GOD: 150,000 tokens - $400
-  - [ ] Update environment variables with package price IDs
+- [x] Update Stripe configuration for one-time purchases only
+  - [x] Create token package products in Stripe dashboard
+  - [x] STARTER: 1,000 tokens - $5
+  - [x] SKEPTIC: 5,000 tokens - $20  
+  - [x] PROMPT_KIDDO: 15,000 tokens - $50
+  - [x] PROMPT_ENGINEER: 50,000 tokens - $150
+  - [x] PROMPT_GOD: 150,000 tokens - $400
+  - [ ] Update environment variables with package price IDs (requires real Stripe setup)
 - [ ] Simplify payment flow (already mostly done)
   - [ ] Keep checkout mode as 'payment' (one-time)
   - [ ] Remove subscription management portal
