@@ -1,28 +1,39 @@
 // Client-safe Stripe configuration (no secret keys)
 export const TOKEN_TIERS = {
+  STARTER: {
+    name: 'Starter',
+    tokens: 1000,
+    price: 500, // $5.00 in cents
+    priceId: 'price_starter_1000_tokens', // Update with real Stripe price ID
+    description: 'Perfect for trying out the platform',
+  },
   SKEPTIC: {
     name: 'Skeptic',
-    tokens: 500,
-    price: 499, // $4.99 in cents
-    priceId: 'price_1RfqQD09137e2qooC5XuRxCq',
+    tokens: 5000,
+    price: 2000, // $20.00 in cents
+    priceId: 'price_skeptic_5000_tokens', // Update with real Stripe price ID
+    description: 'For occasional prompt engineering',
   },
   PROMPT_KIDDO: {
     name: 'Prompt Kiddo',
-    tokens: 2500,
-    price: 999, // $9.99 in cents
-    priceId: 'price_1RfqQE09137e2qooiEzvpyqM',
+    tokens: 15000,
+    price: 5000, // $50.00 in cents
+    priceId: 'price_kiddo_15000_tokens', // Update with real Stripe price ID
+    description: 'For regular prompt optimization',
   },
   PROMPT_ENGINEER: {
     name: 'Prompt Engineer',
-    tokens: 10000,
-    price: 1999, // $19.99 in cents
-    priceId: 'price_1RfqQE09137e2qooRhCGwXoR',
+    tokens: 50000,
+    price: 15000, // $150.00 in cents
+    priceId: 'price_engineer_50000_tokens', // Update with real Stripe price ID
+    description: 'For professional prompt engineers',
   },
   PROMPT_GOD: {
     name: 'Prompt GOD',
-    tokens: 100000,
-    price: 4999, // $49.99 in cents
-    priceId: 'price_1RfqQF09137e2qooj1FkPDkN',
+    tokens: 150000,
+    price: 40000, // $400.00 in cents
+    priceId: 'price_god_150000_tokens', // Update with real Stripe price ID
+    description: 'For prompt engineering masters',
   },
 } as const
 

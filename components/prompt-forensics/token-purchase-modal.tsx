@@ -15,11 +15,23 @@ interface TokenPurchaseModalProps {
 
 const tokenPackages = [
   {
+    tier: 'STARTER' as TokenTier,
+    tokens: TOKEN_TIERS.STARTER.tokens,
+    price: TOKEN_TIERS.STARTER.price / 100,
+    icon: Zap,
+    title: TOKEN_TIERS.STARTER.name,
+    description: TOKEN_TIERS.STARTER.description,
+    color: "blue",
+    popular: false,
+    discount: null,
+  },
+  {
     tier: 'SKEPTIC' as TokenTier,
     tokens: TOKEN_TIERS.SKEPTIC.tokens,
     price: TOKEN_TIERS.SKEPTIC.price / 100,
     icon: Zap,
     title: TOKEN_TIERS.SKEPTIC.name,
+    description: TOKEN_TIERS.SKEPTIC.description,
     color: "gray",
     popular: false,
     discount: null,
@@ -28,10 +40,11 @@ const tokenPackages = [
     tier: 'PROMPT_KIDDO' as TokenTier,
     tokens: TOKEN_TIERS.PROMPT_KIDDO.tokens,
     price: TOKEN_TIERS.PROMPT_KIDDO.price / 100,
-    icon: Zap,
+    icon: Star,
     title: TOKEN_TIERS.PROMPT_KIDDO.name,
-    color: "blue",
-    popular: false,
+    description: TOKEN_TIERS.PROMPT_KIDDO.description,
+    color: "green",
+    popular: true,
     discount: null,
   },
   {
@@ -40,8 +53,9 @@ const tokenPackages = [
     price: TOKEN_TIERS.PROMPT_ENGINEER.price / 100,
     icon: Star,
     title: TOKEN_TIERS.PROMPT_ENGINEER.name,
-    color: "green",
-    popular: true,
+    description: TOKEN_TIERS.PROMPT_ENGINEER.description,
+    color: "purple",
+    popular: false,
     discount: null,
   },
   {
@@ -50,7 +64,8 @@ const tokenPackages = [
     price: TOKEN_TIERS.PROMPT_GOD.price / 100,
     icon: Crown,
     title: TOKEN_TIERS.PROMPT_GOD.name,
-    color: "purple",
+    description: TOKEN_TIERS.PROMPT_GOD.description,
+    color: "gold",
     popular: false,
     discount: null,
   },
@@ -139,7 +154,9 @@ export default function TokenPurchaseModal({ isOpen, onClose, onPurchase }: Toke
                         ? "bg-gradient-to-br from-green-500/15 via-green-400/10 to-emerald-500/15 backdrop-blur-2xl border border-green-400/25 hover:from-green-500/20 hover:via-green-400/15 hover:to-emerald-500/20 hover:border-green-400/35 shadow-2xl hover:shadow-green-500/20"
                         : pkg.color === "purple"
                           ? "bg-gradient-to-br from-purple-500/15 via-purple-400/10 to-violet-500/15 backdrop-blur-2xl border border-purple-400/25 hover:from-purple-500/20 hover:via-purple-400/15 hover:to-violet-500/20 hover:border-purple-400/35 shadow-2xl hover:shadow-purple-500/20"
-                          : "bg-gradient-to-br from-gray-500/15 via-gray-400/10 to-slate-500/15 backdrop-blur-2xl border border-gray-400/25 hover:from-gray-500/20 hover:via-gray-400/15 hover:to-slate-500/20 hover:border-gray-400/35 shadow-2xl hover:shadow-gray-500/20"
+                          : pkg.color === "gold"
+                            ? "bg-gradient-to-br from-yellow-500/15 via-yellow-400/10 to-orange-500/15 backdrop-blur-2xl border border-yellow-400/25 hover:from-yellow-500/20 hover:via-yellow-400/15 hover:to-orange-500/20 hover:border-yellow-400/35 shadow-2xl hover:shadow-yellow-500/20"
+                            : "bg-gradient-to-br from-gray-500/15 via-gray-400/10 to-slate-500/15 backdrop-blur-2xl border border-gray-400/25 hover:from-gray-500/20 hover:via-gray-400/15 hover:to-slate-500/20 hover:border-gray-400/35 shadow-2xl hover:shadow-gray-500/20"
                   }`}
                   onClick={() => setSelectedPackage(index)}
                 >
@@ -168,7 +185,9 @@ export default function TokenPurchaseModal({ isOpen, onClose, onPurchase }: Toke
                             ? "bg-green-500/10 border border-green-400/20"
                             : pkg.color === "purple"
                               ? "bg-purple-500/10 border border-purple-400/20"
-                              : "bg-gray-500/10 border border-gray-400/20"
+                              : pkg.color === "gold"
+                                ? "bg-yellow-500/10 border border-yellow-400/20"
+                                : "bg-gray-500/10 border border-gray-400/20"
                       }`}
                     >
                       <IconComponent
@@ -179,11 +198,14 @@ export default function TokenPurchaseModal({ isOpen, onClose, onPurchase }: Toke
                               ? "text-green-400"
                               : pkg.color === "purple"
                                 ? "text-purple-400"
-                                : "text-gray-400"
+                                : pkg.color === "gold"
+                                  ? "text-yellow-400"
+                                  : "text-gray-400"
                         }`}
                       />
                     </div>
                     <CardTitle className="text-2xl font-bold text-white mb-2">{pkg.title}</CardTitle>
+                    <p className="text-white/70 text-sm">{pkg.description}</p>
                   </CardHeader>
 
                   <CardContent className="text-center space-y-6 px-6 pb-8">
@@ -211,7 +233,9 @@ export default function TokenPurchaseModal({ isOpen, onClose, onPurchase }: Toke
                             ? "bg-gradient-to-br from-green-500/80 via-green-400/70 to-emerald-500/60 backdrop-blur-xl"
                             : pkg.color === "purple"
                               ? "bg-gradient-to-br from-purple-500/80 via-purple-400/70 to-violet-500/60 backdrop-blur-xl"
-                              : "bg-gradient-to-br from-gray-500/80 via-gray-400/70 to-slate-500/60 backdrop-blur-xl"
+                              : pkg.color === "gold"
+                                ? "bg-gradient-to-br from-yellow-500/80 via-yellow-400/70 to-orange-500/60 backdrop-blur-xl"
+                                : "bg-gradient-to-br from-gray-500/80 via-gray-400/70 to-slate-500/60 backdrop-blur-xl"
                       } text-white transition-all duration-200 disabled:opacity-50`}
                     >
                       {isLoading ? (
