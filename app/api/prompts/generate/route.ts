@@ -103,17 +103,64 @@ export async function POST(request: NextRequest) {
       user.id
     )
 
-    // Deduct tokens from user
+    // Save prompt to database and deduct tokens in a transaction
     const tokensToDeduct = 10
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { tokenBalance: user.tokenBalance - tokensToDeduct }
+    const savedPrompt = await prisma.$transaction(async (tx) => {
+      // Deduct tokens from user
+      await tx.user.update({
+        where: { id: user.id },
+        data: { tokenBalance: user.tokenBalance - tokensToDeduct }
+      })
+
+      // Create the prompt record
+      const prompt = await tx.prompt.create({
+        data: {
+          userId: user.id,
+          title: aiResponse.title,
+          description: aiResponse.description || '',
+          tags: aiResponse.tags || [],
+          category: context || 'general',
+          isPublic: false,
+          tokensUsed: tokensToDeduct,
+        }
+      })
+
+      // Create the first version (V1) of the prompt
+      const promptVersion = await tx.promptVersion.create({
+        data: {
+          promptId: prompt.id,
+          version: 1,
+          systemPrompt: '', // Will be populated based on prompt type
+          userPrompt: aiResponse.content,
+          content: aiResponse.content,
+          isActive: true,
+          tokensUsed: tokensUsed,
+          generationParams: {
+            temperature: 0.7,
+            maxOutputTokens: 20000,
+            topP: 0.8,
+            topK: 40,
+            model: model
+          },
+          metadata: {
+            originalIdea: idea,
+            context: context,
+            useCase: useCase,
+            style: style,
+            targetAudience: targetAudience,
+            suggestions: aiResponse.suggestions || []
+          }
+        }
+      })
+
+      return { prompt, promptVersion }
     })
 
-    // Prepare response
+    // Prepare response with prompt ID for navigation
     const response: PromptGenerationResponse = {
       success: true,
       data: {
+        id: savedPrompt.prompt.id,
         title: aiResponse.title,
         description: aiResponse.description || '',
         content: aiResponse.content,

@@ -15,12 +15,16 @@ export interface PromptGenerationRequest {
 }
 
 export interface PromptGenerationResponse {
-  title: string
-  description: string
-  content: string
-  tags: string[]
-  estimatedTokens: number
-  suggestions: string[]
+  success: boolean
+  data: {
+    id?: string // Prompt ID when saved to database
+    title: string
+    description: string
+    content: string
+    tags: string[]
+    suggestions: string[]
+  }
+  usage: AIUsageMetrics
 }
 
 export interface QuestionGenerationRequest {
