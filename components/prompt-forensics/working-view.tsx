@@ -27,10 +27,12 @@ export default function WorkingView({
   promptType = "system-user",
   onShowLoginModal,
   isFromPromptInput = false,
+  generatedPromptData,
 }: {
   promptType?: "system-user" | "direct"
   onShowLoginModal?: () => void
   isFromPromptInput?: boolean
+  generatedPromptData?: any
 }) {
   const [question1Answer, setQuestion1Answer] = useState("")
   const [question2Answer, setQuestion2Answer] = useState("")
@@ -43,7 +45,14 @@ export default function WorkingView({
   const [showQuestionsPanel, setShowQuestionsPanel] = useState(false)
   const [showWhyMattersModal, setShowWhyMattersModal] = useState(false)
   const [whyMattersContent, setWhyMattersContent] = useState("")
-  const [currentVersions, setCurrentVersions] = useState({ left: "v1", right: "v2" })
+  const [currentVersions, setCurrentVersions] = useState(() => {
+    if (generatedPromptData) {
+      // With real data, start with just V1
+      return { left: "v1", right: "v1" }
+    }
+    // Default to V1 vs V2 for demo
+    return { left: "v1", right: "v2" }
+  })
   const [showVersionSelector, setShowVersionSelector] = useState({ left: false, right: false })
   const [currentPromptType, setCurrentPromptType] = useState<"system-user" | "direct">(promptType)
 
@@ -63,29 +72,54 @@ export default function WorkingView({
 
   const [hasGeneratedV1, setHasGeneratedV1] = useState(false)
 
-  // Voting state
-
-  const [versionHistory, setVersionHistory] = useState([
-    {
-      id: "v1",
-      label: "V1",
-      systemPrompt: "You are a helpful assistant. Provide accurate and concise information.",
-      userPrompt:
-        "Tell me about the Eiffel Tower. Include basic information about its location, architect, and significance.",
-      output:
-        "The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France. It is named after the engineer Gustave Eiffel, whose company designed and built the tower. It is a famous landmark and tourist attraction that offers great views of the city.",
-    },
-    {
-      id: "v2",
-      label: "V2",
-      systemPrompt:
-        "You are an expert travel guide and historian. Provide comprehensive information using clear structure and engaging details. Always include key facts, historical context, and modern significance.",
-      userPrompt:
-        "Tell me about the Eiffel Tower. Include basic information about its location, architect, and significance.",
-      output:
-        "Eiffel Tower: Complete Overview\n\nLocation: Champ de Mars, 7th arrondissement, Paris, France\nArchitect: Gustave Eiffel (1832-1923)\nConstruction: 1887-1889\nHeight: 330 meters (1,083 feet)\nSignificance: Iconic symbol of France, UNESCO World Heritage site, and one of the most visited monuments globally with over 6 million visitors annually.",
-    },
-  ])
+  // Initialize version history with real data or defaults
+  const [versionHistory, setVersionHistory] = useState(() => {
+    if (generatedPromptData) {
+      // Create V1 from generated prompt data
+      return [
+        {
+          id: "v1",
+          label: "V1",
+          systemPrompt: promptType === "system-user" ? "You are a helpful assistant." : "",
+          userPrompt: generatedPromptData.content,
+          content: generatedPromptData.content,
+          output: generatedPromptData.content,
+          promptId: generatedPromptData.id,
+          title: generatedPromptData.title,
+          description: generatedPromptData.description,
+          tags: generatedPromptData.tags || [],
+          suggestions: generatedPromptData.suggestions || []
+        }
+      ]
+    }
+    
+    // Fallback to mock data for demo purposes
+    return [
+      {
+        id: "v1",
+        label: "V1",
+        systemPrompt: "You are a helpful assistant. Provide accurate and concise information.",
+        userPrompt:
+          "Tell me about the Eiffel Tower. Include basic information about its location, architect, and significance.",
+        content:
+          "Tell me about the Eiffel Tower. Include basic information about its location, architect, and significance.",
+        output:
+          "The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France. It is named after the engineer Gustave Eiffel, whose company designed and built the tower. It is a famous landmark and tourist attraction that offers great views of the city.",
+      },
+      {
+        id: "v2",
+        label: "V2",
+        systemPrompt:
+          "You are an expert travel guide and historian. Provide comprehensive information using clear structure and engaging details. Always include key facts, historical context, and modern significance.",
+        userPrompt:
+          "Tell me about the Eiffel Tower. Include basic information about its location, architect, and significance.",
+        content:
+          "Tell me about the Eiffel Tower. Include basic information about its location, architect, and significance.",
+        output:
+          "Eiffel Tower: Complete Overview\n\nLocation: Champ de Mars, 7th arrondissement, Paris, France\nArchitect: Gustave Eiffel (1832-1923)\nConstruction: 1887-1889\nHeight: 330 meters (1,083 feet)\nSignificance: Iconic symbol of France, UNESCO World Heritage site, and one of the most visited monuments globally with over 6 million visitors annually.",
+      },
+    ]
+  })
 
   const [comparisonVersion, setComparisonVersion] = useState("v2") // Default to latest version
 
@@ -233,30 +267,96 @@ The tower sways up to 7 centimeters in strong winds and grows 6 inches taller in
     setFeedbackContext("")
   }
 
-  const handleGenerateV3 = () => {
+  const handleGenerateV3 = async () => {
+    if (!feedbackContext.trim() || feedbackContext.length < 50) {
+      alert('Please provide more detailed feedback before generating V3.')
+      return
+    }
+
     console.log("Generating V3 with feedback:", {
       voteType: votingMode,
       context: feedbackContext,
       questions: questionStates,
     })
 
-    // Create new V3 version
-    const newVersion = {
-      id: `v${versionHistory.length + 1}`,
-      label: `V${versionHistory.length + 1}`,
-      prompt: `Enhanced prompt based on feedback: ${feedbackContext}...`,
-      output: `Improved output based on your feedback about ${votingMode === "v2" ? "V2 being better" : "V1 being better"}...`,
+    try {
+      // Get the current prompt ID and content
+      const currentVersion = versionHistory.find(v => v.id === currentVersions.right)
+      if (!currentVersion) {
+        alert('Cannot find current version to improve.')
+        return
+      }
+
+      // Prepare feedback data
+      const approvedQuestions = Object.entries(questionStates)
+        .filter(([_, state]) => state.approved && !state.rejected)
+        .map(([key, state]) => ({
+          questionId: key,
+          answer: state.answer
+        }))
+
+      const requestBody = {
+        promptId: currentVersion.promptId || 'demo',
+        currentPrompt: currentVersion.content,
+        feedback: approvedQuestions,
+        votingFeedback: {
+          selectedVersion: votingMode,
+          reason: feedbackContext,
+          comparison: `User preferred ${votingMode} and provided this feedback: ${feedbackContext}`
+        },
+        userGoals: currentVersion.suggestions || [],
+        previousVersions: versionHistory.map(v => v.content)
+      }
+
+      const response = await fetch('/api/prompts/improve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        console.error('V3 generation failed:', result.error)
+        alert(`V3 generation failed: ${result.error}`)
+        return
+      }
+
+      if (result.success) {
+        // Create new V3 version with AI-generated content
+        const newVersion = {
+          id: `v${versionHistory.length + 1}`,
+          label: `V${versionHistory.length + 1}`,
+          systemPrompt: currentVersion.systemPrompt,
+          userPrompt: result.data.improvedPrompt,
+          content: result.data.improvedPrompt,
+          output: result.data.improvedPrompt,
+          promptId: currentVersion.promptId,
+          title: currentVersion.title,
+          description: currentVersion.description,
+          tags: currentVersion.tags,
+          suggestions: currentVersion.suggestions,
+          changelog: result.data.changelog || [],
+          improvements: result.data.improvements || {}
+        }
+
+        // Add new version to history
+        setVersionHistory((prev) => [...prev, newVersion])
+
+        // Shift versions: current right becomes left, new version becomes right
+        setCurrentVersions({ left: currentVersions.right, right: newVersion.id })
+
+        // Reset voting state
+        setVotingMode(null)
+        setFeedbackContext("")
+      } else {
+        console.error('V3 generation failed:', result.error)
+        alert(`V3 generation failed: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('V3 generation error:', error)
+      alert('V3 generation failed. Please try again.')
     }
-
-    // Add new version to history
-    setVersionHistory((prev) => [...prev, newVersion])
-
-    // Shift versions: V1 becomes V2, V2 becomes V3
-    setCurrentVersions({ left: currentVersions.right, right: newVersion.id })
-
-    // Reset voting state
-    setVotingMode(null)
-    setFeedbackContext("")
   }
 
   const getStrengthColor = (length: number) => {
