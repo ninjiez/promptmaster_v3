@@ -16,46 +16,6 @@ export const authConfig: NextAuthOptions = {
     signIn: '/', // We'll use the modal on the main page
     error: '/auth/error',
   },
-  cookies: {
-    state: {
-      name: `next-auth.state`,
-      options: {
-        httpOnly: true,
-        sameSite: 'none',
-        path: '/',
-        secure: true,
-        maxAge: 900, // 15 minutes
-      },
-    },
-    sessionToken: {
-      name: `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'none',
-        path: '/',
-        secure: true,
-      },
-    },
-    callbackUrl: {
-      name: `next-auth.callback-url`,
-      options: {
-        httpOnly: true,
-        sameSite: 'none',
-        path: '/',
-        secure: true,
-      },
-    },
-    csrfToken: {
-      name: `next-auth.csrf-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'none',
-        path: '/',
-        secure: true,
-      },
-    },
-  },
-  useSecureCookies: true,
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
