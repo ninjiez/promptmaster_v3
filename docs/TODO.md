@@ -1,0 +1,8 @@
+- fix token display
+- fix login modal 
+- fix packages make them subsctiptions
+- update user tier based on subscription -  FREE, GOD, BEGINNER, etc.
+- gatekeep features
+- pricing, how do we price? based on actual tokens with markup? per action? 
+- show some indicator spinner when the prompts are generating
+- show my recent prompts
