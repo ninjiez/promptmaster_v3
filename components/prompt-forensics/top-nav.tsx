@@ -12,8 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ArrowLeft, BotMessageSquare, User, LogOut, Coins, ChevronDown } from "lucide-react"
+import { ArrowLeft, BotMessageSquare, User, LogOut, Coins, ChevronDown, LayoutDashboard } from "lucide-react"
 import TokenPurchaseModal from "./token-purchase-modal"
+import { useRouter } from "next/navigation"
 
 interface TopNavProps {
   showBackButton: boolean
@@ -33,6 +34,7 @@ export default function TopNav({
   onShowLogin,
 }: TopNavProps) {
   const { data: session, status } = useSession()
+  const router = useRouter()
   const [showTokenModal, setShowTokenModal] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
@@ -118,6 +120,17 @@ export default function TopNav({
                 <DropdownMenuSeparator className="bg-white/10" />
 
                 {/* Actions */}
+                <DropdownMenuItem 
+                  onClick={() => {
+                    router.push("/dashboard")
+                    setIsDropdownOpen(false)
+                  }}
+                  className="text-white hover:bg-white/10 cursor-pointer"
+                >
+                  <LayoutDashboard className="mr-2 h-4 w-4 text-green-400" />
+                  <span>Dashboard</span>
+                </DropdownMenuItem>
+
                 <DropdownMenuItem 
                   onClick={() => {
                     setShowTokenModal(true)
